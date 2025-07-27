@@ -1,4 +1,5 @@
 import os
+from pygrabber.dshow_graph import FilterGraph
 
 def find_video(user_query = str):
     user_query = user_query.lower()
@@ -7,3 +8,13 @@ def find_video(user_query = str):
         return word_path
     else:
         return None
+
+def get_available_cameras() :
+    devices = FilterGraph().get_input_devices()
+
+    available_cameras = {}
+
+    for device_index, device_name in enumerate(devices):
+        available_cameras[device_name] = device_index
+
+    return available_cameras
