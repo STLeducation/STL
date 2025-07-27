@@ -21,6 +21,7 @@ pillow==11.2.1
 protobuf==4.25.8
 PyAudio==0.2.14
 pycparser==2.22
+pygrabber==0.2
 pyparsing==3.2.3
 pypiwin32==223
 python-dateutil==2.9.0.post0
