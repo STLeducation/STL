@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STL - Sistema de Tradução de Linguagem de Sinais</title>
+
+    <style>
+      :root {
+        --bg-deep: #0c1b22;
+        --bg-teal: #1f5666;
+        --card: #e8eaee; /* cinza do painel central */
+        --glass-stroke: #ffffff33;
+        --ink: #0b0f14;
+        --ink-soft: #4b5563;
+        --brand: #ffd95e;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #e6edf3;
+        min-height: 100dvh;
+        /* gradiente azul escuro → azul petróleo + brilho radial à direita */
+        background: radial-gradient(
+            1200px 600px at 85% 10%,
+            #1d5c70 0%,
+            #1a4a59 40%,
+            transparent 70%
+          ),
+          linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-teal) 100%);
+        /* removemos rolagem global */
+        overflow: hidden;
+      }
+
+      /* NAVBAR PÍLULA CENTRALIZADA (glassmorphism) */
+      .navbar {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1100;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        padding: 8px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #0f2731aa, #1f4b59aa);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid var(--glass-stroke);
+        box-shadow: 0 12px 30px #00000033;
+        width: clamp(320px, 40vw, 540px);
+        overflow: hidden;
+      }
+
+      .nav-item {
+        position: relative;
+        z-index: 2;
+        display: block;
+        padding: 10px 22px;
+        border-radius: 999px;
+        color: #e7eef6;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+        transition: color 0.25s ease;
+        text-align: center;
+        flex: 1 1 auto;
+      }
+      .nav-item:hover {
+        color: #ffffff;
+      }
+      .nav-item.active {
+        color: #0b1117;
+      }
+
+      .nav-background {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        height: calc(100% - 16px);
+        width: 100px; /* ajustado via JS */
+        border-radius: 999px;
+        background: linear-gradient(180deg, #ffffff90, #ffffff55);
+        box-shadow: inset 0 1px 0 #ffffffb0, 0 6px 20px #0000002e;
+        transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+        z-index: 1;
+      }
+
+      /* BOTÃO TOGGLE (top-left) - glass */
+      .toggle-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1101;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid var(--glass-stroke);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.12),
+          rgba(255, 255, 255, 0.06)
+        );
+        color: #081018;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+      }
+      .toggle-btn.loading {
+        pointer-events: none;
+        opacity: 0.9;
+      }
+
+      /* STATUS (top-right) - glass, verde/amarelo */
+      .status-corner {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1101;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--glass-stroke);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        font-weight: 700;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+        color: #07210a;
+      }
+      .status-corner.connected {
+        background: linear-gradient(180deg, #e6f8ea, #c7f0d3);
+        border-color: rgba(58, 167, 93, 0.25);
+      }
+      .status-corner.disconnected {
+        background: linear-gradient(180deg, #fff8d6, #fff1b8);
+        border-color: rgba(230, 190, 70, 0.25);
+      }
+
+      /* CONTAINER GERAL - dimensionado para caber em tela sem scroll */
+      .main-container {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: calc(20px + 56px); /* abaixo da navbar */
+        width: min(86vw, 1200px);
+        height: calc(
+          100vh - 20px - 56px - 140px
+        ); /* topo + navbar + faixa inferior */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+      }
+
+      /* PAINEL CENTRAL (como no mock: cinza claro, cantos grandes) */
+      .camera-card.glass-card {
+        background: var(--card);
+        color: var(--ink);
+        border: none;
+        border-radius: 28px;
+        box-shadow: 0 20px 60px #0000002a;
+        padding: clamp(16px, 2vw, 28px);
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      /* vídeo ocupa o painel todo, com cantos suaves */
+      .video-container {
+        position: relative;
+        width: 100%;
+        flex: 1 1 auto;
+        border-radius: 22px;
+        overflow: hidden;
+        background: #0b0b0b;
+        box-shadow: inset 0 0 0 1px #00000010;
+      }
+      #video,
+      #canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* CONTROLES: removemos dois botões e usamos apenas toggle (top-left). Mantive área para futuros controles */
+      .controls {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 0;
+      }
+
+      /* RESULTADO + STATUS dentro do painel */
+      .result-section {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .result-label {
+        color: var(--ink-soft);
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      /* result-display com glass e foco */
+      .result-display {
+        font-size: clamp(2rem, 4.5vw, 3.2rem);
+        font-weight: 800;
+        border-radius: 16px;
+        padding: 12px 20px;
+        min-width: 160px;
+        text-align: center;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.95),
+          rgba(255, 255, 255, 0.95)
+        );
+        color: #0d1117;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        border: 1px solid #e9e2bf;
+      }
+      .result-display.glass {
+        /* glassmorphism alternative visual (slightly translucent) */
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.95),
+          rgba(255, 255, 255, 0.95)
+        );
+      }
+      .result-display.active {
+        transform: scale(1.04);
+        transition: transform 150ms ease;
+      }
+
+      /* FAIXA BRANCA DO ALFABETO — fixa, centralizada, com sombra */
+      .imagem-container {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 16px;
+        z-index: 1000;
+        width: min(96vw, 1040px);
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 16px 40px #0000003a;
+        padding: 10px 12px;
+        border: 1px solid #00000010;
+      }
+      .imagem-container img {
+        display: block;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      /* LOADING DO BOTÃO */
+      .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 3px solid rgba(0, 0, 0, 0.12);
+        border-top-color: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* RESPONSIVO */
+      @media (max-width: 900px) {
+        .main-container {
+          width: 94vw;
+          height: calc(100vh - 20px - 56px - 140px);
+        }
+      }
+      @media (max-width: 560px) {
+        .nav-item {
+          padding: 8px 10px;
+          font-size: 13px;
+        }
+        .toggle-btn,
+        .status-corner {
+          top: 12px;
+        }
+        .toggle-btn {
+          left: 12px;
+          padding: 8px 12px;
+        }
+        .status-corner {
+          right: 12px;
+          padding: 6px 10px;
+          font-size: 13px;
+        }
+        .imagem-container {
+          bottom: 8px;
+          width: 98vw;
+          padding: 8px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- botão único iniciar/parar (top-left) -->
+    <button id="toggleBtn" class="toggle-btn">Iniciar</button>
+
+    <!-- status no canto superior direito -->
+    <div id="statusCorner" class="status-corner disconnected">Desconectado</div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar" aria-label="principal">
+      <div class="nav-background" aria-hidden="true"></div>
+      <a href="#" class="nav-item active" data-item="dashboard">Dashboard</a>
+      <a href="#" class="nav-item" data-item="configuracoes">Configurações</a>
+      <a href="#" class="nav-item" data-item="sobre">Sobre</a>
+    </nav>
+
+    <!-- CONTEÚDO PRINCIPAL (centralizado e sem rolagem) -->
+    <main class="main-container" role="main">
+      <!-- Painel central (como no mock) -->
+      <section class="glass-card camera-card" id="camera_card">
+        <div class="video-container" id="videoArea">
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- área inferior do painel: Sinal reconhecido + label -->
+        <div class="result-section" aria-live="polite">
+          <div>
+            <div class="result-label">Sinal Reconhecido:</div>
+            <div id="result" class="result-display glass">?</div>
+          </div>
+          <!-- mantive espaço para indicadores/futuras info -->
+          <div style="min-width: 140px; text-align: right">
+            <!-- poderá mostrar outras informações no futuro -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FAIXA DO ALFABETO (fixa e centralizada) -->
+    <div class="imagem-container" aria-hidden="true">
+      <img
+        src="{{ url_for('static', filename='img/alfabeto-horizontal.png') }}"
+        alt="Alfabeto de Libras"
+      />
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+      // Elementos
+      const socket = io();
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const toggleBtn = document.getElementById("toggleBtn");
+      const resultDiv = document.getElementById("result");
+      const statusCorner = document.getElementById("statusCorner");
+
+      // Navbar helpers
+      const navItems = document.querySelectorAll(".nav-item");
+      const navBackground = document.querySelector(".nav-background");
+
+      // Estado
+      let stream = null;
+      let isProcessing = false;
+      let processingInterval = null;
+      let isStreaming = false; // controla estado da câmera
+
+      /* ---------- SOCKET EVENTS (atualiza status no canto superior direito) ---------- */
+      socket.on("connect", function () {
+        setStatusConnected(true);
+      });
+
+      socket.on("disconnect", function () {
+        setStatusConnected(false);
+      });
+
+      socket.on("prediction_result", function (data) {
+        if (data.letter && data.letter !== "?") {
+          showResult(data.letter);
+        } else {
+          showResult("?");
+        }
+      });
+
+      function setStatusConnected(connected) {
+        if (connected) {
+          statusCorner.textContent = "Conectado";
+          statusCorner.classList.remove("disconnected");
+          statusCorner.classList.add("connected");
+        } else {
+          statusCorner.textContent = "Desconectado";
+          statusCorner.classList.remove("connected");
+          statusCorner.classList.add("disconnected");
+        }
+      }
+
+      function showResult(letter) {
+        resultDiv.textContent = letter;
+        resultDiv.classList.add("active");
+        setTimeout(() => resultDiv.classList.remove("active"), 500);
+      }
+
+      /* ---------- CAMERA: start / stop usando apenas um botão ---------- */
+      async function startCamera() {
+        if (isStreaming) return;
+        try {
+          // feedback visual de carregamento
+          toggleBtn.classList.add("loading");
+          toggleBtn.innerHTML =
+            '<span class="loading" aria-hidden="true"></span>Iniciando...';
+          toggleBtn.disabled = true;
+
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 1280, height: 720, facingMode: "user" },
+            audio: false,
+          });
+          video.srcObject = stream;
+
+          video.onloadedmetadata = () => {
+            // define o tamanho do canvas igual ao vídeo real
+            canvas.width = video.videoWidth || 1280;
+            canvas.height = video.videoHeight || 720;
+          };
+
+          // atualiza flags/estado
+          isStreaming = true;
+          toggleBtn.disabled = false;
+          toggleBtn.classList.remove("loading");
+          toggleBtn.textContent = "Parar";
+
+          // inicia processamento de frames
+          startProcessing();
+        } catch (err) {
+          console.error("Erro ao acessar a câmera:", err);
+          alert(
+            "Erro ao acessar a câmera. Verifique permissões ou outro app usando a câmera."
+          );
+          toggleBtn.disabled = false;
+          toggleBtn.classList.remove("loading");
+          toggleBtn.textContent = "Iniciar";
+          isStreaming = false;
+        }
+      }
+
+      function stopCamera() {
+        if (!isStreaming) return;
+
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          stream = null;
+        }
+        video.srcObject = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        isStreaming = false;
+        stopProcessing();
+
+        // reset UI
+        toggleBtn.textContent = "Iniciar";
+      }
+
+      function startProcessing() {
+        if (processingInterval) return;
+        processingInterval = setInterval(() => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
+            captureAndSendFrame();
+          }
+        }, 200); // envia ~5fps
+      }
+
+      function stopProcessing() {
+        if (processingInterval) {
+          clearInterval(processingInterval);
+          processingInterval = null;
+        }
+        isProcessing = false;
+      }
+
+      function captureAndSendFrame() {
+        if (isProcessing || !video || !canvas) return;
+        isProcessing = true;
+        try {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = canvas.toDataURL("image/jpeg", 0.8);
+          socket.emit("video_frame", { image: imageData });
+        } catch (err) {
+          console.error("Erro ao capturar frame:", err);
+        } finally {
+          isProcessing = false;
+        }
+      }
+
+      // Toggle button controla start/stop
+      toggleBtn.addEventListener("click", () => {
+        if (!isStreaming) startCamera();
+        else stopCamera();
+      });
+
+      /* ---------- Navbar highlight (inicializa posição do fundo) ---------- */
+      function updateBackground(activeItem) {
+        // left relativo ao container .navbar -> offsetLeft funciona
+        const left = activeItem.offsetLeft;
+        const width = activeItem.offsetWidth;
+        navBackground.style.left = `${left + 8}px`; // +8 para padding interno
+        navBackground.style.width = `${width - 16}px`; // -padding
+      }
+
+      /* ---------- PÁGINA SOBRE ---------- */
+      function renderSobre() {
+        const mainContainer = document.querySelector(".main-container");
+        mainContainer.innerHTML = `
+    <section class="glass-card camera-card" id="sobre_card">
+      <h2 style="font-size: clamp(1.5rem, 3vw, 2rem); margin-bottom: 16px; text-align:center;">
+        Sobre o STL
+      </h2>
+      <p style="font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.6; color: var(--ink-soft);">
+        O <strong>STL - Sistema de Tradução de Linguagem de Sinais</strong> é uma ferramenta inovadora
+        desenvolvida para facilitar a comunicação entre pessoas que usam Libras e aquelas que não conhecem a linguagem de sinais.
+      </p>
+      <p style="font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.6; color: var(--ink-soft);">
+        Utilizando recursos modernos de visão computacional e inteligência artificial,
+        o STL captura sinais em tempo real através da câmera, processa os gestos e fornece
+        a tradução imediata, promovendo acessibilidade e inclusão.
+      </p>
+      <p style="font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.6; color: var(--ink-soft);">
+        Nosso objetivo é criar uma experiência intuitiva, confiável e visualmente agradável,
+        permitindo que qualquer pessoa utilize a ferramenta sem complicações.
+      </p>
+      <p style="font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.6; color: var(--ink-soft); margin-top:16px;">
+        Desenvolvido por uma equipe dedicada, o STL está em constante evolução, incorporando
+        novos recursos e melhorias de interface para garantir a melhor experiência possível.
+      </p>
+    </section>
+  `;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // inicia texto do resultado
+        resultDiv.textContent = "?";
+        // ajusta nav background para o item ativo
+        const activeItem = document.querySelector(".nav-item.active");
+        if (activeItem) updateBackground(activeItem);
+      });
+
+      navItems.forEach((item) => {
+        item.addEventListener("click", function (e) {
+          e.preventDefault();
+          navItems.forEach((n) => n.classList.remove("active"));
+          this.classList.add("active");
+          updateBackground(this);
+
+          navItems.forEach((item) => {
+            item.addEventListener("click", function (e) {
+              e.preventDefault();
+              navItems.forEach((n) => n.classList.remove("active"));
+              this.classList.add("active");
+              updateBackground(this);
+
+              // Alterna conteúdo central
+              const itemName = this.dataset.item;
+              if (itemName === "dashboard") {
+                location.reload(); // ou chamar função renderCamera se quiser manter o JS da câmera
+              } else if (itemName === "configuracoes") {
+                alert("Página de configurações ainda não implementada.");
+              } else if (itemName === "sobre") {
+                renderSobre();
+              }
+            });
+          });
+        });
+      });
+
+      window.addEventListener("resize", () => {
+        const activeItem = document.querySelector(".nav-item.active");
+        if (activeItem) updateBackground(activeItem);
+      });
+    </script>
+  </body>
+</html>
