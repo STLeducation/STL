@@ -116,12 +116,6 @@ http://127.0.0.1:5000
 
 ---
 
-## 📝 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
----
-
 ## 🤝 Contribuindo
 
 Contribuições são bem-vindas! Por favor:
@@ -131,14 +125,3 @@ Contribuições são bem-vindas! Por favor:
 3. Commit suas mudanças (`git commit -m 'feat: Adicionar MinhaFeature'`)
 4. Push para a branch (`git push origin feature/MinhaFeature`)
 5. Abra um Pull Request
-
----
-
-## 📞 Contato
-
-- **Email:** stlprojetostl@gmail.com
-- **GitHub:** [@STLeducation](https://github.com/STLeducation)
-
----
-
-*Desenvolvido com ❤️ para promover acessibilidade e inclusão*
