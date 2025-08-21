@@ -239,18 +239,6 @@
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
         border: 1px solid #e9e2bf;
       }
-      .result-display.glass {
-        /* glassmorphism alternative visual (slightly translucent) */
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.95),
-          rgba(255, 255, 255, 0.95)
-        );
-      }
-      .result-display.active {
-        transform: scale(1.04);
-        transition: transform 150ms ease;
-      }
 
       /* FAIXA BRANCA DO ALFABETO — fixa, centralizada, com sombra */
       .imagem-container {
@@ -368,8 +356,8 @@
     <!-- FAIXA DO ALFABETO (fixa e centralizada) -->
     <div class="imagem-container" aria-hidden="true">
       <img
-        src="{{ url_for('static', filename='img/alfabeto-horizontal.png') }}"
-        alt="Alfabeto de Libras"
+        src="{{ url_for('static', filename='alfabeto_hotizontal.png') }}"
+        alt="Alfabeto Horizontal"
       />
     </div>
 
@@ -426,8 +414,6 @@
 
       function showResult(letter) {
         resultDiv.textContent = letter;
-        resultDiv.classList.add("active");
-        setTimeout(() => resultDiv.classList.remove("active"), 500);
       }
 
       /* ---------- CAMERA: start / stop usando apenas um botão ---------- */
