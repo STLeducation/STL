@@ -37,23 +37,27 @@ STL/
    🔗 [Python 3.10.11](https://www.python.org/downloads/release/python-31011/)
 
 2. Crie o ambiente virtual:
+
 ```bash
 python3.10 -m venv venv
 ```
 
 3. Ative o venv:
-   
+
    **Windows:**
+
    ```bash
    venv\Scripts\activate
    ```
-   
+
    **Linux / macOS:**
+
    ```bash
    source venv/bin/activate
    ```
 
 4. Instale as dependências:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -65,11 +69,13 @@ pip install -r requirements.txt
 1. Ative o venv (como mostrado acima).
 
 2. Execute o Flask:
+
 ```bash
 python app.py
 ```
 
 3. Abra o navegador e acesse:
+
 ```
 http://127.0.0.1:5000
 ```
@@ -89,39 +95,59 @@ http://127.0.0.1:5000
 
 ---
 
-## 🔄 Versionamento
+## 🔄 Versionamento e Desenvolvimento
+
+### 📋 Estratégia de Versionamento
+
+O projeto STL segue o padrão **Semantic Versioning (SemVer)**:
+
+- **MAJOR** (X.0.0) - Mudanças incompatíveis na API/funcionalidade principal
+- **MINOR** (1.X.0) - Novas funcionalidades mantendo compatibilidade
+- **PATCH** (1.1.X) - Correções de bugs e pequenas melhorias
+
+**Exemplo:** `v1.2.3` → Major: 1, Minor: 2, Patch: 3
+
+````
+
+### 📝 Convenção de Commits
+
+Utilizamos **Conventional Commits** para padronizar mensagens:
+
+- `feat:` nova funcionalidade
+- `fix:` correção de bugs
+- `docs:` alterações na documentação
+- `style:` formatação, espaços em branco, etc.
+- `refactor:` refatoração de código
+- `test:` adição ou modificação de testes
+- `chore:` atualizações de dependências, configurações
+
+**Exemplos:**
+```bash
+feat: adicionar reconhecimento de números em Libras
+fix: corrigir problema de conexão com a câmera
+docs: atualizar README com instruções de instalação
+refactor: modularizar código JavaScript da interface
+````
+
+### 🏷️ Tags de Versão
+
+```bash
+# Criar uma nova versão
+git tag -a v1.0.0 -m "Versão 1.0.0 - Release inicial"
+git push origin v1.0.0
+
+# Listar versões
+git tag -l
+```
+
+### 🔧 Configurações Git
 
 - **Python**: 3.10.11
-- **Git**: Recomenda-se criar commits claros e frequentes:
-  - `feat:` para novas funcionalidades
-  - `fix:` para correções de bugs
-  - `docs:` para alterações na documentação
-- Branch principal: `main`
-- Branch de desenvolvimento: `STLweb`
+- **Branch principal**: `main`
+- **Branch atual**: `STLweb`
 
 ---
 
 ## 📖 Referência do Repositório
 
 🌐 [STL no GitHub](https://github.com/STLeducation/STL.git)
-
----
-
-## ⚡ Próximos Passos
-
-- Modularizar o código HTML e JS em diferentes arquivos para facilitar manutenção
-- Adicionar páginas de **Configurações**
-- Melhorar o UI/UX do painel central e dos controles
-- Integrar testes automáticos e validação de modelo
-
----
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Por favor:
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'feat: Adicionar MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um Pull Request
