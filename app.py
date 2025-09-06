@@ -168,6 +168,10 @@ hand_tracker = HandTracker()
 def index():
     return render_template('index.html')
 
+@app.route("/sobre")
+def sobre():
+    return render_template("sobre.html")
+
 @socketio.on('video_frame')
 def handle_video_frame(data):
     """Handle incoming video frame from frontend"""

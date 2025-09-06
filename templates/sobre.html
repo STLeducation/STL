@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STL — Sistema de Tradução de Linguagem de Sinais</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/sobre.css') }}"
+    />
+  </head>
+  <body>
+    <!-- Global Navigation -->
+    <nav class="globalnav">
+      <div class="globalnav-content">
+        <div class="globalnav-item">
+          <a href="/" class="globalnav-link">Voltar ao app</a>
+        </div>
+        <div class="globalnav-item">
+          <a href="#" class="globalnav-link">Configurações</a>
+        </div>
+        <div class="globalnav-item">
+          <a href="#" class="globalnav-link globalnav-link-current">Sobre</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-headline">
+          <span class="hero-headline-sub">Sistema de Tradução de</span>
+          <span class="hero-headline-main"> Linguagem<br />de Sinais</span>
+        </h1>
+        <p class="hero-subhead">
+          Conectando mundos através da tecnologia.<br />
+          Construindo pontes para a comunicação inclusiva.
+        </p>
+        <div class="hero-cta">
+          <a href="#team" class="button-primary">Conheça a equipe</a>
+          <a href="#timeline" class="button-secondary">Nossa jornada</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-visual-element"></div>
+      </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="section section-team">
+      <div class="section-content">
+        <div class="section-header">
+          <h2 class="section-headline">Nossa equipe</h2>
+          <p class="section-subhead">
+            Mentes dedicadas a criar tecnologia<br />
+            que transforma vidas.
+          </p>
+        </div>
+
+        <div class="team-carousel-container">
+          <div class="team-carousel">
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-primary">AS</div>
+                <h3 class="member-name">Alexandre Silva</h3>
+                <p class="member-title">Lead Developer</p>
+                <p class="member-description">
+                  Visionário por trás do STL. Especialista em inteligência
+                  artificial e visão computacional aplicada à acessibilidade.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-secondary">MR</div>
+                <h3 class="member-name">Maria Rodrigues</h3>
+                <p class="member-title">Academic Advisor</p>
+                <p class="member-description">
+                  Doutora em Ciência da Computação. Orientação acadêmica e
+                  expertise em IA aplicada à inclusão social.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-tertiary">JS</div>
+                <h3 class="member-name">João Santos</h3>
+                <p class="member-title">AI Specialist</p>
+                <p class="member-description">
+                  Doutor em Engenharia de Software. Expert em deep learning e
+                  otimização de modelos de reconhecimento.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-quaternary">LM</div>
+                <h3 class="member-name">Larissa Mendes</h3>
+                <p class="member-title">UX Designer</p>
+                <p class="member-description">
+                  Especialista em design centrado no usuário. Criando interfaces
+                  intuitivas e acessíveis.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-primary">RF</div>
+                <h3 class="member-name">Rafael Ferreira</h3>
+                <p class="member-title">Data Scientist</p>
+                <p class="member-description">
+                  Especialista em análise de dados. Transformando informação em
+                  insights para aprimorar o sistema.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-secondary">CR</div>
+                <h3 class="member-name">Camila Ribeiro</h3>
+                <p class="member-title">QA Specialist</p>
+                <p class="member-description">
+                  Garantia de qualidade e testes. Conexão direta com a
+                  comunidade surda para validação.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-tertiary">TP</div>
+                <h3 class="member-name">Thiago Pereira</h3>
+                <p class="member-title">Visual Designer</p>
+                <p class="member-description">
+                  Designer visual especializado em acessibilidade. Identidade
+                  visual inclusiva e impactante.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-quaternary">BS</div>
+                <h3 class="member-name">Beatriz Silva</h3>
+                <p class="member-title">Communications</p>
+                <p class="member-description">
+                  Comunicação científica e documentação. Preparando nossa
+                  participação na FEBRACE 2025.
+                </p>
+              </div>
+            </div>
+
+            <!-- Duplicate cards for infinite scroll -->
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-primary">AS</div>
+                <h3 class="member-name">Alexandre Silva</h3>
+                <p class="member-title">Lead Developer</p>
+                <p class="member-description">
+                  Visionário por trás do STL. Especialista em inteligência
+                  artificial e visão computacional aplicada à acessibilidade.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-secondary">MR</div>
+                <h3 class="member-name">Maria Rodrigues</h3>
+                <p class="member-title">Academic Advisor</p>
+                <p class="member-description">
+                  Doutora em Ciência da Computação. Orientação acadêmica e
+                  expertise em IA aplicada à inclusão social.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-tertiary">JS</div>
+                <h3 class="member-name">João Santos</h3>
+                <p class="member-title">AI Specialist</p>
+                <p class="member-description">
+                  Doutor em Engenharia de Software. Expert em deep learning e
+                  otimização de modelos de reconhecimento.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-quaternary">LM</div>
+                <h3 class="member-name">Larissa Mendes</h3>
+                <p class="member-title">UX Designer</p>
+                <p class="member-description">
+                  Especialista em design centrado no usuário. Criando interfaces
+                  intuitivas e acessíveis.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-primary">RF</div>
+                <h3 class="member-name">Rafael Ferreira</h3>
+                <p class="member-title">Data Scientist</p>
+                <p class="member-description">
+                  Especialista em análise de dados. Transformando informação em
+                  insights para aprimorar o sistema.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-secondary">CR</div>
+                <h3 class="member-name">Camila Ribeiro</h3>
+                <p class="member-title">QA Specialist</p>
+                <p class="member-description">
+                  Garantia de qualidade e testes. Conexão direta com a
+                  comunidade surda para validação.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-tertiary">TP</div>
+                <h3 class="member-name">Thiago Pereira</h3>
+                <p class="member-title">Visual Designer</p>
+                <p class="member-description">
+                  Designer visual especializado em acessibilidade. Identidade
+                  visual inclusiva e impactante.
+                </p>
+              </div>
+            </div>
+
+            <div class="team-card">
+              <div class="team-card-content">
+                <div class="member-avatar avatar-quaternary">BS</div>
+                <h3 class="member-name">Beatriz Silva</h3>
+                <p class="member-title">Communications</p>
+                <p class="member-description">
+                  Comunicação científica e documentação. Preparando nossa
+                  participação na FEBRACE 2025.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section section-cta">
+      <div class="section-content">
+        <div class="cta-content">
+          <h2 class="cta-headline">
+            Quebrando barreiras.<br />
+            Conectando mundos.
+          </h2>
+          <p class="cta-subhead">
+            O STL não é apenas tecnologia. É esperança traduzida em código,<br />
+            é inclusão transformada em realidade.
+          </p>
+
+          <div class="features-grid">
+            <div class="feature">
+              <div class="feature-icon">🤖</div>
+              <h3 class="feature-title">IA Avançada</h3>
+              <p class="feature-description">
+                Reconhecimento em tempo real com precisão excepcional
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">❤️</div>
+              <h3 class="feature-title">Feito com amor</h3>
+              <p class="feature-description">
+                Cada linha de código pensada na experiência do usuário
+              </p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">🌟</div>
+              <h3 class="feature-title">Impacto real</h3>
+              <p class="feature-description">
+                Transformando vidas através da tecnologia inclusiva
+              </p>
+            </div>
+          </div>
+
+          <div class="cta-actions">
+            <a href="/" class="button-hero">Experimente o STL</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline" class="section section-timeline">
+      <div class="section-content">
+        <div class="section-header">
+          <h2 class="section-headline">Nossa jornada</h2>
+          <p class="section-subhead">
+            Da concepção à FEBRACE 2025.<br />
+            Uma história de dedicação e inovação.
+          </p>
+        </div>
+
+        <div class="timeline">
+          <div class="timeline-item timeline-completed">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">Janeiro 2024</div>
+              <h3 class="timeline-title">Concepção</h3>
+              <p class="timeline-description">
+                Identificação da necessidade e definição do escopo inicial do
+                projeto.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item timeline-completed">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">Fev — Mar 2024</div>
+              <h3 class="timeline-title">Primeiro protótipo</h3>
+              <p class="timeline-description">
+                Desenvolvimento da versão inicial com captura de vídeo e
+                processamento básico.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item timeline-completed">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">Abr — Jun 2024</div>
+              <h3 class="timeline-title">Integração com IA</h3>
+              <p class="timeline-description">
+                Implementação de machine learning para reconhecimento de gestos
+                em Libras.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item timeline-completed">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">Jul — Ago 2024</div>
+              <h3 class="timeline-title">Interface refinada</h3>
+              <p class="timeline-description">
+                Desenvolvimento da interface moderna com foco na experiência do
+                usuário.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item timeline-completed">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">Set — Out 2024</div>
+              <h3 class="timeline-title">Testes e validação</h3>
+              <p class="timeline-description">
+                Testes extensivos com usuários reais e otimização da precisão.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item timeline-current">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">Jan 2025</div>
+              <h3 class="timeline-title">Versão final</h3>
+              <p class="timeline-description">
+                Lançamento da versão completa com todas as funcionalidades
+                otimizadas.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item timeline-future timeline-featured">
+            <div class="timeline-marker">
+              <div class="timeline-pulse"></div>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-date">Mar 2025</div>
+              <h3 class="timeline-title">FEBRACE 2025</h3>
+              <p class="timeline-description">
+                Apresentação na maior feira de ciências e engenharia do Brasil.
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item timeline-future">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">2025+</div>
+              <h3 class="timeline-title">Expansão</h3>
+              <p class="timeline-description">
+                Crescimento do sistema e impacto na comunidade surda brasileira.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='js/sobre.js') }}"></script>
+  </body>
+</html>
