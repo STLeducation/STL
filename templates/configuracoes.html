@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configurações — STL</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/configuracoes.css') }}"
+    />
+  </head>
+  <body>
+    <!-- Global Navigation -->
+    <nav class="globalnav">
+      <div class="globalnav-content">
+        <div class="globalnav-item">
+          <a href="/" class="globalnav-link">Dashboard</a>
+        </div>
+        <div class="globalnav-item">
+          <a href="/configuracoes" class="globalnav-link globalnav-link-current"
+            >Configurações</a
+          >
+        </div>
+        <div class="globalnav-item">
+          <a href="/sobre" class="globalnav-link">Sobre</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content - Single Screen Layout -->
+    <main class="main-container">
+      <div class="content-grid">
+        <!-- Header Section -->
+        <div class="header-section">
+          <h1 class="page-title">Configurações</h1>
+          <p class="page-subtitle">Configure sua experiência com o STL</p>
+        </div>
+
+        <!-- Camera Preview Section -->
+        <div class="camera-section">
+          <div class="preview-container">
+            <video
+              id="cameraPreview"
+              autoplay
+              playsinline
+              muted
+              class="camera-preview"
+            ></video>
+            <div class="preview-overlay" id="previewOverlay">
+              <div class="preview-status">
+                <div class="status-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9Z"
+                      fill="currentColor"
+                    />
+                    <circle cx="12" cy="13" r="3" fill="currentColor" />
+                  </svg>
+                </div>
+                <span class="status-text" id="statusText"
+                  >Câmera desconectada</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="camera-info" id="cameraInfo">Selecione uma câmera</div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+          <!-- Camera Selection -->
+          <div class="control-group">
+            <label for="cameraSelect" class="control-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9Z"
+                  fill="currentColor"
+                />
+              </svg>
+              Câmera
+            </label>
+            <div class="select-wrapper">
+              <select id="cameraSelect" class="form-select">
+                <option value="">Carregando...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Performance Settings -->
+          <div class="control-group">
+            <label class="control-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <polygon
+                  points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
+                  fill="currentColor"
+                />
+              </svg>
+              Performance
+            </label>
+            <div class="toggle-controls">
+              <label class="toggle-item">
+                <input
+                  type="checkbox"
+                  id="highPerformance"
+                  class="toggle-input"
+                />
+                <span class="toggle-slider"></span>
+                <div class="toggle-content">
+                  <span class="toggle-title">Modo Alta Performance</span>
+                  <span class="toggle-subtitle">30 FPS, máxima resolução</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Accessibility Settings -->
+          <div class="control-group">
+            <label class="control-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7H15L13.5 7.5C13.1 7.7 12.7 8 12.5 8.5L11 12V18H13V13.5L14 12L15 18H17L15.5 11.5L17 10.5V9H21Z"
+                  fill="currentColor"
+                />
+              </svg>
+              Acessibilidade
+            </label>
+            <div class="toggle-controls">
+              <label class="toggle-item">
+                <input
+                  type="checkbox"
+                  id="voiceOutput"
+                  class="toggle-input"
+                  checked
+                />
+                <span class="toggle-slider"></span>
+                <div class="toggle-content">
+                  <span class="toggle-title">Saída de Voz</span>
+                  <span class="toggle-subtitle">Narração das traduções</span>
+                </div>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="highContrast" class="toggle-input" />
+                <span class="toggle-slider"></span>
+                <div class="toggle-content">
+                  <span class="toggle-title">Alto Contraste</span>
+                  <span class="toggle-subtitle">Melhor visibilidade</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions-section">
+          <button id="testCameraBtn" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" fill="currentColor" />
+              <polygon points="10,8 16,12 10,16" fill="white" />
+            </svg>
+            Testar
+          </button>
+          <button id="saveConfig" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3H16L21 8V19C21 20.1 20.1 21 19 21Z"
+                fill="currentColor"
+              />
+            </svg>
+            Salvar
+          </button>
+          <a href="/" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z"
+                fill="currentColor"
+              />
+            </svg>
+            Dashboard
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Configurando...</p>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/configuracoes.js') }}"></script>
+  </body>
+</html>

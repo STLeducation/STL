@@ -1,56 +1,125 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>STL - Sistema de Tradução de Linguagem de Sinais</title>
-
-    <!-- CSS externo -->
+    <title>STL — Sistema de Tradução de Linguagem de Sinais</title>
     <link rel="stylesheet" href="static/css/style.css" />
   </head>
-
   <body>
-    <!-- botão único iniciar/parar (top-left) -->
-    <button id="toggleBtn" class="toggle-btn">Iniciar</button>
-
-    <!-- status no canto superior direito -->
-    <div id="statusCorner" class="status-corner disconnected">Desconectado</div>
-
-    <!-- NAVBAR -->
-    <nav class="navbar" aria-label="principal">
-      <div class="nav-background" aria-hidden="true"></div>
-      <a href="#" class="nav-item active" data-item="dashboard">Dashboard</a>
-      <a href="#" class="nav-item" data-item="configuracoes">Configurações</a>
-      <a href="#" class="nav-item" data-item="sobre">Sobre</a>
+    <!-- Global Navigation -->
+    <nav class="globalnav">
+      <div class="globalnav-content">
+        <div class="globalnav-brand">STL</div>
+        <div class="globalnav-nav">
+          <div class="globalnav-item">
+            <a href="#" class="globalnav-link active" data-item="dashboard"
+              >Dashboard</a
+            >
+          </div>
+          <div class="globalnav-item">
+            <a
+              href="/configuracoes"
+              class="globalnav-link"
+              data-item="configuracoes"
+              >Configurações</a
+            >
+          </div>
+          <div class="globalnav-item">
+            <a href="/sobre" class="globalnav-link" data-item="sobre">Sobre</a>
+          </div>
+        </div>
+        <div class="globalnav-controls">
+          <div id="statusCorner" class="status-indicator disconnected">
+            <div class="status-dot"></div>
+            <span>Desconectado</span>
+          </div>
+        </div>
+      </div>
     </nav>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <main class="main-container" role="main">
-      <section class="glass-card camera-card" id="camera_card">
-        <div class="video-container" id="videoArea">
-          <video id="video" autoplay playsinline muted></video>
-          <canvas id="canvas"></canvas>
+    <!-- Fixed Layout Container -->
+    <div class="fixed-layout">
+      <!-- Left Section: Camera + Controls -->
+      <div class="left-section">
+        <!-- Camera Header -->
+        <div class="camera-header">
+          <h1 class="camera-title">Reconhecimento de Libras</h1>
+          <button id="toggleBtn" class="toggle-button">
+            <span>Iniciar Câmera</span>
+          </button>
         </div>
 
-        <div class="result-section" aria-live="polite">
-          <div>
-            <div class="result-label">Sinal Reconhecido:</div>
-            <div id="result" class="result-display glass">?</div>
+        <!-- Video Container -->
+        <div class="video-container">
+          <video
+            id="video"
+            autoplay
+            playsinline
+            muted
+            style="display: none"
+          ></video>
+          <canvas id="canvas" style="display: none"></canvas>
+          <div class="video-placeholder">
+            <div class="placeholder-content">
+              <div class="camera-icon">📹</div>
+              <div class="placeholder-text">Clique em "Iniciar Câmera"</div>
+              <div class="placeholder-subtext">
+                Posicione sua mão e faça os gestos
+              </div>
+            </div>
           </div>
-          <div style="min-width: 140px; text-align: right"></div>
         </div>
-      </section>
-    </main>
 
-    <!-- FAIXA DO ALFABETO -->
-    <div class="imagem-container" aria-hidden="true">
-      <img
-        src="{{ url_for('static', filename='alfabeto_hotizontal.png') }}"
-        alt="Alfabeto Horizontal"
-      />
+        <!-- Result Display -->
+        <div class="result-section">
+          <div class="result-info">
+            <div class="result-label">Letra Reconhecida</div>
+          </div>
+          <div id="result" class="result-display">?</div>
+        </div>
+      </div>
+
+      <!-- Right Section: Instructions -->
+      <div class="right-section">
+        <div class="instructions-container">
+          <div class="info-card">
+            <h2 class="info-card-title">Como usar</h2>
+            <div class="info-card-content">
+              <div class="step">1. Clique em "Iniciar Câmera"</div>
+              <div class="step">2. Posicione sua mão na tela</div>
+              <div class="step">3. Faça os gestos do alfabeto</div>
+              <div class="step">4. Veja o resultado aparecer</div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h2 class="info-card-title">Dicas importantes</h2>
+            <div class="info-card-content">
+              <div class="tip">• Mantenha boa iluminação</div>
+              <div class="tip">• Centralize a mão na tela</div>
+              <div class="tip">• Faça gestos bem definidos</div>
+              <div class="tip">• Use o alfabeto como referência</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Section: Alphabet -->
+      <div class="bottom-section">
+        <div class="alphabet-container">
+          <h3 class="alphabet-title">Alfabeto em Libras - Referência</h3>
+          <div class="alphabet-strip">
+            <img
+              src="{{ url_for('static', filename='alfabeto_hotizontal.png') }}"
+              alt="Alfabeto em Libras A-Z"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="static/js/script.js"></script>
   </body>

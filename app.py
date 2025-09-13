@@ -172,6 +172,10 @@ def index():
 def sobre():
     return render_template("sobre.html")
 
+@app.route("/configuracoes")
+def configuracoes():
+    return render_template("configuracoes.html")
+
 @socketio.on('video_frame')
 def handle_video_frame(data):
     """Handle incoming video frame from frontend"""
