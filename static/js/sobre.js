@@ -184,12 +184,11 @@ class STLAboutPage {
         window.location.href = "/";
       }, 300);
     } else if (item === "configuracoes") {
-      // Shake animation for not implemented
-      e.currentTarget.style.animation = "shake 0.5s";
+      // Animate out before navigation
+      document.body.style.opacity = "0";
       setTimeout(() => {
-        e.currentTarget.style.animation = "";
-        alert("Página de configurações em desenvolvimento.");
-      }, 500);
+        window.location.href = "/configuracoes";
+      }, 300);
     }
   }
 

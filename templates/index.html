@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,7 +8,7 @@
   </head>
   <body>
     <!-- Global Navigation -->
-    <nav class="globalnav">
+    <nav class="globalnav" id="globalNav">
       <div class="globalnav-content">
         <div class="globalnav-brand">STL</div>
         <div class="globalnav-nav">
@@ -30,6 +30,30 @@
           </div>
         </div>
         <div class="globalnav-controls">
+          <!-- Theme Toggle -->
+          <button id="themeToggle" class="theme-toggle" title="Alternar tema">
+            <div class="theme-icon light-icon">☀️</div>
+            <div class="theme-icon dark-icon">🌙</div>
+          </button>
+
+          <!-- Fullscreen Toggle -->
+          <button
+            id="fullscreenToggle"
+            class="fullscreen-toggle"
+            title="Modo tela cheia"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+
+          <!-- Status Indicator -->
           <div id="statusCorner" class="status-indicator disconnected">
             <div class="status-dot"></div>
             <span>Desconectado</span>
@@ -39,7 +63,7 @@
     </nav>
 
     <!-- Fixed Layout Container -->
-    <div class="fixed-layout">
+    <div class="fixed-layout" id="mainLayout">
       <!-- Left Section: Camera + Controls -->
       <div class="left-section">
         <!-- Camera Header -->
@@ -81,7 +105,7 @@
       </div>
 
       <!-- Right Section: Instructions -->
-      <div class="right-section">
+      <div class="right-section" id="rightSection">
         <div class="instructions-container">
           <div class="info-card">
             <h2 class="info-card-title">Como usar</h2>
@@ -102,11 +126,26 @@
               <div class="tip">• Use o alfabeto como referência</div>
             </div>
           </div>
+
+          <!-- Quick Settings Card -->
+          <div class="info-card settings-card">
+            <h2 class="info-card-title">Configurações rápidas</h2>
+            <div class="quick-settings">
+              <div class="setting-item">
+                <label class="setting-label">Câmera salva:</label>
+                <span id="savedCamera" class="setting-value">Nenhuma</span>
+              </div>
+              <div class="setting-item">
+                <label class="setting-label">Última sessão:</label>
+                <span id="lastSession" class="setting-value">--</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Bottom Section: Alphabet -->
-      <div class="bottom-section">
+      <div class="bottom-section" id="bottomSection">
         <div class="alphabet-container">
           <h3 class="alphabet-title">Alfabeto em Libras - Referência</h3>
           <div class="alphabet-strip">
@@ -118,6 +157,27 @@
         </div>
       </div>
     </div>
+
+    <!-- Fullscreen Exit Button (hidden by default) -->
+    <button
+      id="exitFullscreen"
+      class="exit-fullscreen"
+      style="display: none"
+      title="Sair da tela cheia"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M8 12L16 4M16 12L8 4"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+
+    <!-- Theme Transition Overlay -->
+    <div id="themeTransition" class="theme-transition"></div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>

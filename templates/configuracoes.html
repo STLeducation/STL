@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -83,6 +83,108 @@
               <select id="cameraSelect" class="form-select">
                 <option value="">Carregando...</option>
               </select>
+            </div>
+          </div>
+
+          <!-- Theme Settings -->
+          <div class="control-group">
+            <label class="control-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <line
+                  x1="12"
+                  y1="1"
+                  x2="12"
+                  y2="3"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <line
+                  x1="12"
+                  y1="21"
+                  x2="12"
+                  y2="23"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <line
+                  x1="4.22"
+                  y1="4.22"
+                  x2="5.64"
+                  y2="5.64"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <line
+                  x1="18.36"
+                  y1="18.36"
+                  x2="19.78"
+                  y2="19.78"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <line
+                  x1="1"
+                  y1="12"
+                  x2="3"
+                  y2="12"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <line
+                  x1="21"
+                  y1="12"
+                  x2="23"
+                  y2="12"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+              </svg>
+              Aparência
+            </label>
+            <div class="theme-controls">
+              <div class="theme-options">
+                <label class="theme-option">
+                  <input
+                    type="radio"
+                    name="theme"
+                    value="dark"
+                    id="themeDark"
+                    checked
+                  />
+                  <div class="theme-preview dark-theme">
+                    <div class="theme-circles">
+                      <div class="circle"></div>
+                      <div class="circle"></div>
+                      <div class="circle"></div>
+                    </div>
+                  </div>
+                  <span>Escuro</span>
+                </label>
+                <label class="theme-option">
+                  <input
+                    type="radio"
+                    name="theme"
+                    value="light"
+                    id="themeLight"
+                  />
+                  <div class="theme-preview light-theme">
+                    <div class="theme-circles">
+                      <div class="circle"></div>
+                      <div class="circle"></div>
+                      <div class="circle"></div>
+                    </div>
+                  </div>
+                  <span>Claro</span>
+                </label>
+              </div>
             </div>
           </div>
 

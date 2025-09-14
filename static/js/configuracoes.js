@@ -1,6 +1,4 @@
-// Apple-style STL Configurações JavaScript
-// Advanced camera configuration with Apple UX patterns
-
+// STL Configurações - Sistema Integrado com Temas e Preferências
 class STLConfiguracao {
   constructor() {
     this.currentStream = null;
@@ -11,17 +9,24 @@ class STLConfiguracao {
       cameraSelect: document.getElementById("cameraSelect"),
       cameraPreview: document.getElementById("cameraPreview"),
       previewOverlay: document.querySelector(".preview-overlay"),
-      previewStatus: document.getElementById("previewStatus"),
       statusText: document.querySelector(".status-text"),
       cameraInfo: document.getElementById("cameraInfo"),
       testCameraBtn: document.getElementById("testCameraBtn"),
       saveBtn: document.getElementById("saveConfig"),
       loadingOverlay: document.getElementById("loadingOverlay"),
       toastContainer: document.getElementById("toastContainer"),
+
+      // Theme controls
+      themeDark: document.getElementById("themeDark"),
+      themeLight: document.getElementById("themeLight"),
+
+      // Settings toggles
       highPerformanceToggle: document.getElementById("highPerformance"),
       voiceOutputToggle: document.getElementById("voiceOutput"),
+      highContrastToggle: document.getElementById("highContrast"),
     };
 
+    this.preferences = {};
     this.init();
   }
 
@@ -29,10 +34,12 @@ class STLConfiguracao {
     try {
       this.showLoading("Inicializando configurações...");
 
+      this.loadSavedTheme();
+      this.loadSavedPreferences();
       await this.checkPermissions();
       await this.loadCameras();
       this.bindEvents();
-      this.loadSavedSettings();
+      this.setupThemeControls();
       this.setupNavigation();
 
       this.hideLoading();
@@ -43,9 +50,67 @@ class STLConfiguracao {
     }
   }
 
+  loadSavedTheme() {
+    const savedTheme = localStorage.getItem("stl-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+
+    if (savedTheme === "light") {
+      this.elements.themeLight.checked = true;
+    } else {
+      this.elements.themeDark.checked = true;
+    }
+  }
+
+  loadSavedPreferences() {
+    try {
+      const saved = localStorage.getItem("stl-preferences");
+      if (saved) {
+        this.preferences = JSON.parse(saved);
+        this.applyPreferencesToUI();
+      }
+    } catch (error) {
+      console.warn("Erro ao carregar preferências:", error);
+      this.preferences = {};
+    }
+  }
+
+  applyPreferencesToUI() {
+    if (this.preferences.highPerformance !== undefined) {
+      this.elements.highPerformanceToggle.checked =
+        this.preferences.highPerformance;
+    }
+    if (this.preferences.voiceOutput !== undefined) {
+      this.elements.voiceOutputToggle.checked = this.preferences.voiceOutput;
+    } else {
+      this.elements.voiceOutputToggle.checked = true; // Default true
+    }
+    if (this.preferences.highContrast !== undefined) {
+      this.elements.highContrastToggle.checked = this.preferences.highContrast;
+    }
+  }
+
+  setupThemeControls() {
+    const themeInputs = document.querySelectorAll('input[name="theme"]');
+    themeInputs.forEach((input) => {
+      input.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          this.changeTheme(e.target.value);
+        }
+      });
+    });
+  }
+
+  changeTheme(newTheme) {
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("stl-theme", newTheme);
+    this.showToast(
+      `Tema ${newTheme === "dark" ? "escuro" : "claro"} ativado`,
+      "info"
+    );
+  }
+
   async checkPermissions() {
     try {
-      // Request camera permission
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       stream.getTracks().forEach((track) => track.stop());
       return true;
@@ -74,12 +139,20 @@ class STLConfiguracao {
 
       this.populateCameraSelect(videoDevices);
 
-      // Auto-select first camera
-      if (videoDevices.length > 0) {
+      // Auto-select saved camera or first camera
+      const savedCameraId = this.preferences.lastCamera?.deviceId;
+      if (
+        savedCameraId &&
+        videoDevices.find((d) => d.deviceId === savedCameraId)
+      ) {
+        this.selectedCameraId = savedCameraId;
+        this.elements.cameraSelect.value = savedCameraId;
+      } else if (videoDevices.length > 0) {
         this.selectedCameraId = videoDevices[0].deviceId;
         this.elements.cameraSelect.value = this.selectedCameraId;
-        await this.startCamera(this.selectedCameraId);
       }
+
+      await this.startCamera(this.selectedCameraId);
     } catch (error) {
       console.error("Erro ao carregar câmeras:", error);
       this.elements.cameraSelect.innerHTML =
@@ -90,7 +163,6 @@ class STLConfiguracao {
 
   populateCameraSelect(devices) {
     this.elements.cameraSelect.innerHTML = "";
-
     devices.forEach((device, index) => {
       const option = document.createElement("option");
       option.value = device.deviceId;
@@ -103,24 +175,24 @@ class STLConfiguracao {
     try {
       this.showCameraStatus("Conectando à câmera...", "loading");
 
-      // Stop current stream
       if (this.currentStream) {
         this.currentStream.getTracks().forEach((track) => track.stop());
       }
 
-      // Get new stream
-      this.currentStream = await navigator.mediaDevices.getUserMedia({
+      const constraints = {
         video: {
           deviceId: { exact: deviceId },
           width: { ideal: 1280 },
           height: { ideal: 720 },
           frameRate: { ideal: 30 },
         },
-      });
+      };
 
+      this.currentStream = await navigator.mediaDevices.getUserMedia(
+        constraints
+      );
       this.elements.cameraPreview.srcObject = this.currentStream;
 
-      // Wait for video to load
       await new Promise((resolve) => {
         this.elements.cameraPreview.onloadedmetadata = resolve;
       });
@@ -128,6 +200,17 @@ class STLConfiguracao {
       this.hideCameraStatus();
       this.updateCameraInfo(deviceId);
       this.selectedCameraId = deviceId;
+
+      // Save camera preference
+      const selectedOption = this.elements.cameraSelect.querySelector(
+        `option[value="${deviceId}"]`
+      );
+      this.preferences.lastCamera = {
+        deviceId: deviceId,
+        label: selectedOption
+          ? selectedOption.textContent
+          : "Câmera desconhecida",
+      };
     } catch (error) {
       console.error("Erro ao iniciar câmera:", error);
       this.showCameraStatus("Falha na conexão da câmera", "error");
@@ -139,7 +222,6 @@ class STLConfiguracao {
   showCameraStatus(message, type = "loading") {
     this.elements.previewOverlay.classList.remove("hidden");
     this.elements.statusText.textContent = message;
-
     const statusIcon =
       this.elements.previewOverlay.querySelector(".status-icon");
     statusIcon.className = `status-icon ${type}`;
@@ -162,7 +244,6 @@ class STLConfiguracao {
       ? selectedOption.textContent
       : "Câmera desconhecida";
 
-    // Get video dimensions if available
     if (this.elements.cameraPreview.videoWidth) {
       const width = this.elements.cameraPreview.videoWidth;
       const height = this.elements.cameraPreview.videoHeight;
@@ -204,33 +285,36 @@ class STLConfiguracao {
       this.handleToggleChange("voiceOutput", e.target.checked);
     });
 
-    // Handle page visibility changes
+    this.elements.highContrastToggle.addEventListener("change", (e) => {
+      this.handleToggleChange("highContrast", e.target.checked);
+    });
+
+    // Page visibility changes
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && this.currentStream) {
-        // Pause camera when page is hidden for performance
         this.currentStream.getVideoTracks().forEach((track) => {
           track.enabled = false;
         });
       } else if (!document.hidden && this.currentStream) {
-        // Resume camera when page is visible
         this.currentStream.getVideoTracks().forEach((track) => {
           track.enabled = true;
         });
       }
     });
 
-    // Handle beforeunload to cleanup
+    // Cleanup on page unload
     window.addEventListener("beforeunload", () => {
       this.cleanup();
+      this.savePreferences();
     });
   }
 
   setupNavigation() {
-    // Smooth navigation with fade effect
     document.querySelectorAll("a[href]").forEach((link) => {
       if (link.href.includes("/")) {
         link.addEventListener("click", (e) => {
           e.preventDefault();
+          this.savePreferences();
 
           document.body.style.opacity = "0.5";
           document.body.style.transition = "opacity 0.3s ease";
@@ -282,16 +366,7 @@ class STLConfiguracao {
 
   saveConfiguration() {
     try {
-      const config = {
-        selectedCameraId: this.selectedCameraId,
-        highPerformance: this.elements.highPerformanceToggle.checked,
-        voiceOutput: this.elements.voiceOutputToggle.checked,
-        savedAt: new Date().toISOString(),
-      };
-
-      // Save to localStorage
-      localStorage.setItem("stl-config", JSON.stringify(config));
-
+      this.savePreferences();
       this.showToast("Configurações salvas com sucesso", "success");
 
       // Animate save button
@@ -304,22 +379,22 @@ class STLConfiguracao {
     }
   }
 
-  loadSavedSettings() {
+  savePreferences() {
     try {
-      const saved = localStorage.getItem("stl-config");
-      if (saved) {
-        const config = JSON.parse(saved);
+      const config = {
+        selectedCameraId: this.selectedCameraId,
+        lastCamera: this.preferences.lastCamera,
+        highPerformance: this.elements.highPerformanceToggle.checked,
+        voiceOutput: this.elements.voiceOutputToggle.checked,
+        highContrast: this.elements.highContrastToggle.checked,
+        theme: document.documentElement.getAttribute("data-theme"),
+        savedAt: new Date().toISOString(),
+      };
 
-        if (config.selectedCameraId) {
-          this.elements.cameraSelect.value = config.selectedCameraId;
-        }
-
-        this.elements.highPerformanceToggle.checked =
-          config.highPerformance || false;
-        this.elements.voiceOutputToggle.checked = config.voiceOutput !== false; // default true
-      }
+      localStorage.setItem("stl-preferences", JSON.stringify(config));
+      this.preferences = config;
     } catch (error) {
-      console.warn("Erro ao carregar configurações salvas:", error);
+      console.warn("Erro ao salvar preferências:", error);
     }
   }
 
@@ -329,9 +404,17 @@ class STLConfiguracao {
         ? "Modo alta performance ativado"
         : "Modo alta performance desativado",
       voiceOutput: value ? "Saída de voz ativada" : "Saída de voz desativada",
+      highContrast: value
+        ? "Alto contraste ativado"
+        : "Alto contraste desativado",
     };
 
     this.showToast(messages[setting], "info");
+
+    // Apply high contrast immediately
+    if (setting === "highContrast") {
+      document.body.classList.toggle("high-contrast", value);
+    }
   }
 
   showLoading(message = "Carregando...") {
@@ -369,12 +452,10 @@ class STLConfiguracao {
 
     this.elements.toastContainer.appendChild(toast);
 
-    // Show toast
     requestAnimationFrame(() => {
       toast.classList.add("show");
     });
 
-    // Auto hide
     setTimeout(() => {
       toast.classList.remove("show");
       setTimeout(() => {
@@ -389,12 +470,10 @@ class STLConfiguracao {
 
   handleError(message, error) {
     console.error(message, error);
-
     let errorMessage = message;
     if (error.message) {
       errorMessage += `: ${error.message}`;
     }
-
     this.showToast(errorMessage, "error", 5000);
   }
 
@@ -417,45 +496,17 @@ class STLConfiguracao {
   isVoiceOutputEnabled() {
     return this.elements.voiceOutputToggle.checked;
   }
+
+  getCurrentTheme() {
+    return document.documentElement.getAttribute("data-theme");
+  }
+
+  getPreferences() {
+    return { ...this.preferences };
+  }
 }
 
-// Utility functions for enhanced UX
-const ConfigUtils = {
-  // Smooth scroll to element
-  scrollToElement(element, offset = 0) {
-    const elementTop = element.offsetTop - offset;
-    window.scrollTo({
-      top: elementTop,
-      behavior: "smooth",
-    });
-  },
-
-  // Debounce function for performance
-  debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  },
-
-  // Detect device capabilities
-  getDeviceCapabilities() {
-    return {
-      hasCamera: !!navigator.mediaDevices?.getUserMedia,
-      hasNotifications: "Notification" in window,
-      hasLocalStorage: typeof Storage !== "undefined",
-      isMobile: /Mobi|Android/i.test(navigator.userAgent),
-      supportsWebGL: !!window.WebGLRenderingContext,
-    };
-  },
-};
-
-// Enhanced error handling with user-friendly messages
+// Enhanced error handling
 class ErrorHandler {
   static getReadableError(error) {
     const errorMap = {
@@ -473,37 +524,45 @@ class ErrorHandler {
   }
 }
 
-// Performance monitor for diagnostics
-class PerformanceMonitor {
-  constructor() {
-    this.startTime = performance.now();
-    this.marks = {};
-  }
+// Device capabilities detection
+const ConfigUtils = {
+  getDeviceCapabilities() {
+    return {
+      hasCamera: !!navigator.mediaDevices?.getUserMedia,
+      hasNotifications: "Notification" in window,
+      hasLocalStorage: typeof Storage !== "undefined",
+      isMobile: /Mobi|Android/i.test(navigator.userAgent),
+      supportsWebGL: !!window.WebGLRenderingContext,
+      supportsFullscreen: !!(
+        document.fullscreenEnabled ||
+        document.webkitFullscreenEnabled ||
+        document.mozFullScreenEnabled
+      ),
+    };
+  },
 
-  mark(name) {
-    this.marks[name] = performance.now();
-  }
-
-  measure(name, startMark) {
-    const startTime = startMark ? this.marks[startMark] : this.startTime;
-    const duration = performance.now() - startTime;
-    console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
-    return duration;
-  }
-}
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  },
+};
 
 // Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
-  const monitor = new PerformanceMonitor();
-  monitor.mark("init-start");
-
   // Check device capabilities
   const capabilities = ConfigUtils.getDeviceCapabilities();
   console.log("📱 Device capabilities:", capabilities);
 
   if (!capabilities.hasCamera) {
     document.body.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; color: #f5f5f7; font-family: Inter, sans-serif;">
+      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; color: var(--color-text-primary); font-family: Inter, sans-serif;">
         <div>
           <h1>Câmera não suportada</h1>
           <p>Este dispositivo não suporta acesso à câmera.</p>
@@ -516,15 +575,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize configuration manager
   const configManager = new STLConfiguracao();
 
-  // Make globally available for debugging
+  // Make globally available
   window.STLConfig = configManager;
   window.ConfigUtils = ConfigUtils;
 
-  monitor.measure("Initialization complete", "init-start");
-  console.log("🚀 STL Configurações carregadas com design Apple!");
+  console.log("🚀 STL Configurações carregadas com:");
+  console.log("• Sistema de temas claro/escuro");
+  console.log("• Integração com preferências do dashboard");
+  console.log("• Configurações de câmera avançadas");
+  console.log("• Interface Apple design");
 });
 
-// Handle page unload
+// Cleanup on page unload
 window.addEventListener("beforeunload", () => {
   if (window.STLConfig) {
     window.STLConfig.cleanup();
