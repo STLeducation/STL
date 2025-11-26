@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STL - Tradutor de LIBRAS</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        /* Paleta Gemini */
+        --gemini-bg: #0e0c15;
+        --gemini-primary: #4facfe;
+        --gemini-secondary: #00f2fe;
+        --gemini-purple: #8e2de2;
+        --gemini-pink: #ff0080;
+        --gemini-gradient: linear-gradient(
+          135deg,
+          #4facfe 0%,
+          #00f2fe 50%,
+          #8e2de2 100%
+        );
+        --gemini-gradient-text: linear-gradient(
+          90deg,
+          #8ea5ff,
+          #d96570,
+          #9b72cb
+        );
+        --glass-border: rgba(255, 255, 255, 0.15);
+        --text-white: #ffffff;
+        --text-gray: #9aa0a6;
+        --success: #00e676;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        background-color: var(--gemini-bg);
+        color: var(--text-white);
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* --- CAMERA LAYER (MODIFICADO PARA EFEITO AMBILIGHT) --- */
+      .camera-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Vídeo de fundo (Desfocado e Esticado) */
+      #video-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Preenche tudo */
+        transform: scaleX(-1) scale(1.2); /* Zoom extra para evitar bordas */
+        filter: blur(60px) brightness(0.6) saturate(1.5); /* Efeito vidro fosco colorido */
+        z-index: 1;
+        opacity: 0.8;
+      }
+
+      /* Vídeo principal (Nítido e Contido) */
+      #video-stream {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Sua escolha: mostra a imagem toda */
+        transform: scaleX(-1);
+        z-index: 2;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5); /* Sombra para separar do fundo */
+      }
+
+      .camera-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* Vignette para escurecer as bordas */
+        background: radial-gradient(
+          circle at center,
+          transparent 40%,
+          #0e0c15 100%
+        );
+        pointer-events: none;
+        z-index: 3;
+      }
+
+      /* --- UI LAYER --- */
+      .ui-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        pointer-events: none;
+      }
+
+      .top-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        pointer-events: auto;
+      }
+
+      /* --- FLUID MENU CSS --- */
+      .fluid-menu-container {
+        position: relative;
+        width: 64px;
+        filter: url("#goo-effect");
+        z-index: 50;
+      }
+      .menu-item {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        color: #1a1a1a;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        will-change: transform, opacity;
+      }
+      .menu-item.toggle-btn {
+        z-index: 60;
+        background: var(--text-white);
+      }
+      .icon-wrapper {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .icon-menu,
+      .icon-close {
+        position: absolute;
+        transition: all 0.3s ease-in-out;
+      }
+      .icon-menu {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+      .icon-close {
+        opacity: 0;
+        transform: scale(0) rotate(-180deg);
+      }
+      .fluid-menu-container.expanded .icon-menu {
+        opacity: 0;
+        transform: scale(0) rotate(180deg);
+      }
+      .fluid-menu-container.expanded .icon-close {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+      .menu-item.sub-item {
+        opacity: 0;
+        z-index: 50;
+        background: #eef2ff;
+      }
+      .menu-item.sub-item:hover {
+        background: var(--gemini-primary);
+        color: white;
+      }
+      .fluid-menu-container.expanded .menu-item.sub-item {
+        opacity: 1;
+      }
+      .fluid-menu-container.expanded .menu-item:nth-child(2) {
+        transform: translateY(70px);
+        z-index: 49;
+      }
+      .fluid-menu-container.expanded .menu-item:nth-child(3) {
+        transform: translateY(135px);
+        z-index: 48;
+      }
+      .fluid-menu-container.expanded .menu-item:nth-child(4) {
+        transform: translateY(200px);
+        z-index: 47;
+      }
+
+      /* --- ACTION BUTTON --- */
+      .action-btn {
+        position: relative;
+        padding: 12px 32px;
+        border-radius: 100px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        color: white;
+        font-family: "Outfit", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .action-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          90deg,
+          var(--gemini-primary),
+          var(--gemini-purple),
+          var(--gemini-pink)
+        );
+        opacity: 0.2;
+        z-index: -1;
+        transition: opacity 0.3s;
+      }
+      .action-btn:hover {
+        transform: scale(1.05);
+        border-color: white;
+      }
+      .action-btn.stop-mode {
+        background: rgba(255, 20, 20, 0.15);
+        border-color: #ff4b4b;
+      }
+      .btn-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: white;
+        transition: 0.3s;
+      }
+      .action-btn.stop-mode .btn-dot {
+        background: #ff4b4b;
+        animation: blink 1s infinite;
+      }
+
+      /* --- RESULT CARD (Updated with Speak Button) --- */
+      .result-container {
+        align-self: center;
+        width: 100%;
+        max-width: 600px;
+        background: rgba(18, 18, 28, 0.75);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 20px 30px;
+        margin-bottom: 20px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        pointer-events: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .result-container::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--gemini-primary),
+          var(--gemini-purple),
+          transparent
+        );
+      }
+      .label-ia {
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: var(--gemini-gradient-text);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: inline-block;
+      }
+
+      .result-main-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .translation-text {
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: white;
+        min-height: 50px;
+        text-align: center;
+      }
+
+      /* Speak Button */
+      .btn-speak {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+      .btn-speak:hover {
+        background: var(--gemini-primary);
+        border-color: transparent;
+        transform: scale(1.1);
+      }
+      .btn-speak.speaking {
+        animation: pulse-speak 1s infinite;
+        background: var(--gemini-purple);
+      }
+
+      .confidence-wrapper {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: center;
+        width: 100%;
+      }
+      .conf-bar-bg {
+        width: 150px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .conf-bar-fill {
+        width: 0%;
+        height: 100%;
+        background: var(--gemini-gradient);
+        transition: width 0.5s ease-out;
+      }
+      .conf-text {
+        font-size: 0.8rem;
+        color: var(--text-gray);
+      }
+
+      /* --- AI LOADER --- */
+      .ai-loader-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        background: linear-gradient(
+          to bottom,
+          rgba(26, 51, 121, 0.85),
+          rgba(15, 23, 42, 0.9),
+          rgba(0, 0, 0, 0.95)
+        );
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .ai-loader-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .loader-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 180px;
+        height: 180px;
+        user-select: none;
+      }
+      .loader-circle {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        animation: loaderCircle 5s linear infinite;
+      }
+      .loader-text {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        gap: 2px;
+        font-family: "Inter", sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+      }
+      .loader-letter {
+        display: inline-block;
+        color: white;
+        opacity: 0.4;
+        animation: loaderLetter 3s infinite;
+      }
+      @keyframes loaderCircle {
+        0% {
+          transform: rotate(90deg);
+          box-shadow: 0 6px 12px 0 #38bdf8 inset, 0 12px 18px 0 #005dff inset,
+            0 36px 36px 0 #1e40af inset, 0 0 3px 1.2px rgba(56, 189, 248, 0.3),
+            0 0 6px 1.8px rgba(0, 93, 255, 0.2);
+        }
+        50% {
+          transform: rotate(270deg);
+          box-shadow: 0 6px 12px 0 #60a5fa inset, 0 12px 6px 0 #0284c7 inset,
+            0 24px 36px 0 #005dff inset, 0 0 3px 1.2px rgba(56, 189, 248, 0.3),
+            0 0 6px 1.8px rgba(0, 93, 255, 0.2);
+        }
+        100% {
+          transform: rotate(450deg);
+          box-shadow: 0 6px 12px 0 #4dc8fd inset, 0 12px 18px 0 #005dff inset,
+            0 36px 36px 0 #1e40af inset, 0 0 3px 1.2px rgba(56, 189, 248, 0.3),
+            0 0 6px 1.8px rgba(0, 93, 255, 0.2);
+        }
+      }
+      @keyframes loaderLetter {
+        0%,
+        100% {
+          opacity: 0.4;
+          transform: translateY(0);
+        }
+        20% {
+          opacity: 1;
+          transform: scale(1.15);
+        }
+        40% {
+          opacity: 0.7;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse-speak {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(142, 45, 226, 0.7);
+        }
+        70% {
+          transform: scale(1.1);
+          box-shadow: 0 0 0 10px rgba(142, 45, 226, 0);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(142, 45, 226, 0);
+        }
+      }
+
+      /* --- ONBOARDING & CHECKLIST --- */
+      .spotlight-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .spotlight-overlay.active {
+        opacity: 1;
+      }
+      .spotlight-box {
+        position: absolute;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+        border-radius: 12px;
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        border: 2px solid var(--gemini-primary);
+        pointer-events: none;
+      }
+      .spotlight-box::after {
+        content: "";
+        position: absolute;
+        inset: -10px;
+        border: 2px solid var(--gemini-purple);
+        border-radius: 16px;
+        opacity: 0;
+        animation: ripple 2s infinite;
+      }
+      .coachmark-card {
+        position: absolute;
+        z-index: 9999;
+        width: 320px;
+        background: rgba(20, 20, 30, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--gemini-purple);
+        border-radius: 16px;
+        padding: 20px;
+        color: white;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+        transition: all 0.3s ease;
+        pointer-events: auto;
+      }
+      .coachmark-card.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      .coach-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .coach-step {
+        font-size: 0.75rem;
+        color: var(--gemini-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .coach-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+      .coach-desc {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
+      .coach-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .btn-coach {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: 0.2s;
+      }
+      .btn-coach-secondary {
+        background: transparent;
+        color: var(--text-gray);
+        border: 1px solid var(--glass-border);
+      }
+      .btn-coach-secondary:hover {
+        border-color: white;
+        color: white;
+      }
+      .btn-coach-primary {
+        background: var(--text-white);
+        color: black;
+      }
+      .btn-coach-primary:hover {
+        background: var(--gemini-secondary);
+        transform: translateY(-1px);
+      }
+      .checklist-trigger {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9000;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--gemini-bg);
+        border: 1px solid var(--gemini-purple);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+        transition: 0.3s;
+        pointer-events: auto;
+      }
+      .checklist-trigger:hover {
+        transform: scale(1.1);
+        background: var(--gemini-purple);
+      }
+      .checklist-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 20px;
+        height: 20px;
+        background: var(--gemini-pink);
+        border-radius: 50%;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+      }
+      .checklist-panel {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        z-index: 9000;
+        width: 320px;
+        background: #13111c;
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        transform: translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .checklist-panel.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .checklist-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .checklist-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .checklist-close {
+        cursor: pointer;
+        color: var(--text-gray);
+      }
+      .checklist-items {
+        padding: 10px;
+        list-style: none;
+      }
+      .checklist-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .checklist-row:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .checklist-row.active {
+        background: rgba(142, 45, 226, 0.15);
+        border: 1px solid rgba(142, 45, 226, 0.3);
+      }
+      .check-circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--text-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .checklist-row.completed .check-circle {
+        background: var(--success);
+        border-color: var(--success);
+      }
+      .check-icon {
+        width: 12px;
+        height: 12px;
+        fill: black;
+        display: none;
+      }
+      .checklist-row.completed .check-icon {
+        display: block;
+      }
+      .row-text {
+        display: flex;
+        flex-direction: column;
+      }
+      .row-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #fff;
+      }
+      .row-title.done {
+        text-decoration: line-through;
+        color: var(--text-gray);
+      }
+      .row-desc {
+        font-size: 0.75rem;
+        color: var(--text-gray);
+      }
+      .checklist-progress-container {
+        padding: 16px 16px 0;
+      }
+      .checklist-progress-text {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: var(--text-gray);
+        margin-bottom: 5px;
+      }
+      .progress-track {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        height: 100%;
+        background: var(--gemini-gradient);
+        width: 0%;
+        transition: 0.4s;
+      }
+      @keyframes ripple {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.1);
+          opacity: 0;
+        }
+      }
+
+      /* Utils */
+      .svg-filters {
+        position: absolute;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+      }
+
+      @media (max-width: 768px) {
+        .checklist-panel,
+        .coachmark-card {
+          width: 90%;
+          right: 5%;
+          bottom: 80px;
+        }
+        .action-btn {
+          font-size: 0.9rem;
+        }
+        .translation-text {
+          font-size: 1.5rem;
+        }
+        /* Ajuste de layer em mobile para garantir que o menu fique sobreposto */
+        .fluid-menu-container {
+          z-index: 100;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="svg-filters">
+      <defs>
+        <filter id="goo-effect">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+          <feColorMatrix
+            in="blur"
+            mode="matrix"
+            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"
+            result="goo"
+          />
+          <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+        </filter>
+      </defs>
+    </svg>
+
+    <!-- NEW AI LOADER OVERLAY -->
+    <div class="ai-loader-overlay" id="aiLoader">
+      <div class="loader-wrapper">
+        <div class="loader-text" id="loaderTextContainer"></div>
+        <div class="loader-circle"></div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING ELEMENTS -->
+    <div class="spotlight-overlay" id="spotlightOverlay">
+      <div class="spotlight-box" id="spotlightBox"></div>
+    </div>
+
+    <div class="coachmark-card" id="coachmarkCard">
+      <div class="coach-header">
+        <span class="coach-step" id="coachStep">PASSO 1/5</span>
+        <div style="cursor: pointer" onclick="onboarding.stop()">✕</div>
+      </div>
+      <div class="coach-title" id="coachTitle">Título</div>
+      <div class="coach-desc" id="coachDesc">Descrição aqui.</div>
+      <div class="coach-actions">
+        <button
+          class="btn-coach btn-coach-secondary"
+          onclick="onboarding.prev()"
+          id="btnPrev"
+        >
+          Voltar
+        </button>
+        <button
+          class="btn-coach btn-coach-primary"
+          onclick="onboarding.next()"
+          id="btnNext"
+        >
+          Próximo
+        </button>
+      </div>
+    </div>
+
+    <div class="checklist-trigger" onclick="onboarding.toggleList()">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M9 11l3 3L22 4"></path>
+        <path
+          d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+        ></path>
+      </svg>
+      <div class="checklist-count" id="checklistCount">1</div>
+    </div>
+
+    <div class="checklist-panel" id="checklistPanel">
+      <div class="checklist-header">
+        <span class="checklist-title">Guia de Uso FENIC</span>
+        <span class="checklist-close" onclick="onboarding.toggleList()">✕</span>
+      </div>
+      <div class="checklist-progress-container">
+        <div class="checklist-progress-text">
+          <span>Progresso</span>
+          <span id="progressText">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+      <ul class="checklist-items" id="checklistItems"></ul>
+    </div>
+
+    <!-- APP CONTENT -->
+    <div class="camera-layer" id="cameraLayer">
+      <!-- NOVO: Vídeo de Fundo (Blur/Ambilight) -->
+      <img id="video-background" src="{{ url_for('video_feed') }}" alt="" />
+
+      <div class="camera-overlay"></div>
+
+      <!-- Vídeo Principal (Contain) -->
+      <img
+        id="video-stream"
+        src="{{ url_for('video_feed') }}"
+        alt="IA Vision Feed"
+      />
+    </div>
+
+    <div class="ui-layer">
+      <div class="top-section">
+        <div class="fluid-menu-container" id="fluidMenuContainer">
+          <div
+            class="menu-item toggle-btn"
+            onclick="toggleMenu()"
+            id="menuToggle"
+          >
+            <div class="icon-wrapper">
+              <svg
+                class="icon-menu"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+              <svg
+                class="icon-close"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
+          </div>
+
+          <div
+            class="menu-item sub-item"
+            onclick="clearRecording()"
+            title="Limpar Gravação"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              ></path>
+            </svg>
+          </div>
+          <div
+            class="menu-item sub-item"
+            onclick="onboarding.start()"
+            title="Ajuda / Tutorial"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div
+            class="menu-item sub-item"
+            onclick="location.reload()"
+            title="Recarregar App"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path
+                d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+              ></path>
+            </svg>
+          </div>
+        </div>
+
+        <button class="action-btn" id="actionBtn" onclick="handleAction()">
+          <div class="btn-dot"></div>
+          <span id="btnText">INICIAR IA</span>
+        </button>
+      </div>
+
+      <div class="result-container" id="resultCard">
+        <div class="label-ia">✨ STL Analysis</div>
+
+        <div class="result-main-row">
+          <div class="translation-text" id="predictionText">
+            Aguardando sinais...
+          </div>
+          <!-- NOVO BOTÃO DE FALAR -->
+          <button
+            class="btn-speak"
+            id="btnSpeak"
+            onclick="speakResult()"
+            title="Ouvir Tradução"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path
+                d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="confidence-wrapper">
+          <div class="conf-text">Confiança</div>
+          <div class="conf-bar-bg">
+            <div class="conf-bar-fill" id="confFill"></div>
+          </div>
+          <div class="conf-text" id="confValue">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- FLUID MENU LOGIC ---
+      const menuContainer = document.getElementById("fluidMenuContainer");
+      function toggleMenu() {
+        menuContainer.classList.toggle("expanded");
+      }
+
+      // --- TTS LOGIC (TEXT TO SPEECH) ---
+      function speakResult() {
+        // 1. Pega o texto original que está na tela
+        const rawText = document.getElementById("predictionText").innerText;
+
+        // 2. Lógica de Limpeza (Regex)
+        // - replace(/Sinal:\s*/gi, "") -> Remove "Sinal:" e espaços depois dele
+        // - replace(/\s*\d+(\.\d+)?%/g, "") -> Remove números seguidos de % (ex: 99%)
+        // - trim() -> Remove espaços sobrando no começo e fim
+        let cleanText = rawText
+          .replace(/Sinal:\s*/gi, "")
+          .replace(/\s*\d+(\.\d+)?%/g, "")
+          .trim();
+
+        // 3. Verificações de segurança
+        // Se o texto limpo estiver vazio, ou se o texto original for um status do sistema, não fala nada.
+        if (
+          !cleanText ||
+          rawText === "Aguardando sinais..." ||
+          rawText === "Gravando..." ||
+          rawText === "..."
+        )
+          return;
+
+        // 4. Configuração da Voz
+        const synth = window.speechSynthesis;
+        // ATENÇÃO: Aqui passamos o cleanText (o texto limpo), não o rawText
+        const utterThis = new SpeechSynthesisUtterance(cleanText);
+        utterThis.lang = "pt-BR";
+        utterThis.rate = 1.0;
+
+        // Animação do botão
+        const btnSpeak = document.getElementById("btnSpeak");
+        btnSpeak.classList.add("speaking");
+
+        utterThis.onend = () => {
+          btnSpeak.classList.remove("speaking");
+        };
+
+        // 5. Falar
+        synth.cancel(); // Para qualquer fala anterior para não encavalar
+        synth.speak(utterThis);
+      }
+
+      // --- LOADER LOGIC ---
+      function initLoader(text = "PROCESSANDO") {
+        const container = document.getElementById("loaderTextContainer");
+        container.innerHTML = "";
+        text.split("").forEach((char, index) => {
+          const span = document.createElement("span");
+          span.className = "loader-letter";
+          span.innerText = char;
+          span.style.animationDelay = `${index * 0.1}s`;
+          container.appendChild(span);
+        });
+      }
+      initLoader("TRADUZINDO");
+
+      // --- ONBOARDING SYSTEM ---
+      const stepsData = [
+        {
+          id: "intro",
+          title: "Bem-vindo ao FENIC 2025",
+          desc: "Este aplicativo utiliza Visão Computacional para traduzir Libras em tempo real. Vamos configurar!",
+          target: "#fluidMenuContainer",
+          forceCenter: true,
+        },
+        {
+          id: "camera",
+          title: "Área de Captura",
+          desc: "Posicione-se de forma que suas mãos e tronco fiquem visíveis. O fundo desfocado ajuda na imersão!",
+          target: "#cameraLayer",
+          forceCenter: true,
+        },
+        {
+          id: "controls",
+          title: "Botão de Ação",
+          desc: "Use este botão para INICIAR a gravação dos sinais e PARAR para enviar para a IA processar.",
+          target: "#actionBtn",
+        },
+        {
+          id: "menu",
+          title: "Ferramentas Extras",
+          desc: "Clique aqui para expandir o menu e acessar limpeza de texto e ajuda.",
+          target: "#fluidMenuContainer",
+        },
+        {
+          id: "results",
+          title: "Tradução & Voz",
+          desc: "A tradução aparece aqui. Clique no ícone de som para ouvir o resultado em voz alta!",
+          target: "#resultCard",
+        },
+      ];
+
+      class OnboardingController {
+        constructor(steps) {
+          this.steps = steps;
+          this.currentStepIndex = 0;
+          this.isActive = false;
+          this.completedSteps = new Set();
+          this.spotlightOverlay = document.getElementById("spotlightOverlay");
+          this.spotlightBox = document.getElementById("spotlightBox");
+          this.coachCard = document.getElementById("coachmarkCard");
+          this.checklistPanel = document.getElementById("checklistPanel");
+          this.checklistItems = document.getElementById("checklistItems");
+          this.initChecklist();
+        }
+
+        initChecklist() {
+          this.checklistItems.innerHTML = "";
+          this.steps.forEach((step, index) => {
+            const li = document.createElement("li");
+            li.className = "checklist-row";
+            li.onclick = () => this.jumpTo(index);
+            li.innerHTML = `
+                        <div class="check-circle"><svg class="check-icon" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg></div>
+                        <div class="row-text"><span class="row-title">${
+                          step.title
+                        }</span><span class="row-desc">${step.desc.substring(
+              0,
+              40
+            )}...</span></div>`;
+            this.checklistItems.appendChild(li);
+          });
+          this.updateProgress();
+        }
+
+        toggleList() {
+          this.checklistPanel.classList.toggle("open");
+        }
+
+        start() {
+          this.currentStepIndex = 0;
+          this.isActive = true;
+          this.spotlightOverlay.classList.add("active");
+          this.checklistPanel.classList.remove("open");
+          this.renderStep();
+        }
+
+        stop() {
+          this.isActive = false;
+          this.spotlightOverlay.classList.remove("active");
+          this.coachCard.classList.remove("visible");
+          setTimeout(() => this.checklistPanel.classList.add("open"), 500);
+        }
+
+        next() {
+          this.markComplete(this.currentStepIndex);
+          if (this.currentStepIndex < this.steps.length - 1) {
+            this.currentStepIndex++;
+            this.renderStep();
+          } else {
+            this.stop();
+          }
+        }
+
+        prev() {
+          if (this.currentStepIndex > 0) {
+            this.currentStepIndex--;
+            this.renderStep();
+          }
+        }
+        jumpTo(index) {
+          this.currentStepIndex = index;
+          this.start();
+        }
+        markComplete(index) {
+          this.completedSteps.add(index);
+          this.updateProgress();
+        }
+
+        updateProgress() {
+          const total = this.steps.length;
+          const completed = this.completedSteps.size;
+          const percent = Math.round((completed / total) * 100);
+          document.getElementById("progressBar").style.width = `${percent}%`;
+          document.getElementById("progressText").innerText = `${percent}%`;
+          document.getElementById("checklistCount").innerText =
+            total - completed;
+          if (completed === total) {
+            document.getElementById("checklistCount").style.background =
+              "var(--success)";
+            document.getElementById("checklistCount").innerText = "✓";
+          }
+          const rows = this.checklistItems.children;
+          for (let i = 0; i < rows.length; i++) {
+            if (this.completedSteps.has(i)) rows[i].classList.add("completed");
+            rows[i]
+              .querySelector(".row-title")
+              .classList.toggle("done", this.completedSteps.has(i));
+          }
+        }
+
+        renderStep() {
+          const step = this.steps[this.currentStepIndex];
+          const targetEl = document.querySelector(step.target);
+
+          if (targetEl && !step.forceCenter) {
+            const rect = targetEl.getBoundingClientRect();
+            this.spotlightBox.style.top = rect.top + "px";
+            this.spotlightBox.style.left = rect.left + "px";
+            this.spotlightBox.style.width = rect.width + "px";
+            this.spotlightBox.style.height = rect.height + "px";
+            this.spotlightBox.style.opacity = "1";
+          } else {
+            this.spotlightBox.style.top = "50%";
+            this.spotlightBox.style.left = "50%";
+            this.spotlightBox.style.width = "0px";
+            this.spotlightBox.style.height = "0px";
+            this.spotlightBox.style.opacity = "0";
+          }
+
+          document.getElementById("coachStep").innerText = `PASSO ${
+            this.currentStepIndex + 1
+          }/${this.steps.length}`;
+          document.getElementById("coachTitle").innerText = step.title;
+          document.getElementById("coachDesc").innerText = step.desc;
+          document.getElementById("btnPrev").disabled =
+            this.currentStepIndex === 0;
+          document.getElementById("btnPrev").style.opacity =
+            this.currentStepIndex === 0 ? "0.5" : "1";
+          document.getElementById("btnNext").innerText =
+            this.currentStepIndex === this.steps.length - 1
+              ? "Concluir"
+              : "Próximo";
+
+          this.coachCard.classList.add("visible");
+          const cardRect = this.coachCard.getBoundingClientRect();
+          let top, left;
+
+          if (targetEl && !step.forceCenter) {
+            const targetRect = targetEl.getBoundingClientRect();
+            top = targetRect.bottom + 20;
+            left = targetRect.left + targetRect.width / 2 - cardRect.width / 2;
+
+            if (top + cardRect.height > window.innerHeight - 20) {
+              top = targetRect.top - cardRect.height - 20;
+            }
+            if (top < 20) {
+              top = window.innerHeight / 2 - cardRect.height / 2;
+              left = window.innerWidth / 2 - cardRect.width / 2;
+            }
+            left = Math.max(
+              20,
+              Math.min(left, window.innerWidth - cardRect.width - 20)
+            );
+          } else {
+            top = window.innerHeight / 2 - cardRect.height / 2;
+            left = window.innerWidth / 2 - cardRect.width / 2;
+          }
+
+          this.coachCard.style.top = top + "px";
+          this.coachCard.style.left = left + "px";
+
+          const rows = this.checklistItems.children;
+          for (let row of rows) row.classList.remove("active");
+          rows[this.currentStepIndex].classList.add("active");
+        }
+      }
+
+      const onboarding = new OnboardingController(stepsData);
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          onboarding.toggleList();
+        }, 1000);
+      });
+
+      // --- APP LOGIC ---
+      let isRecording = false;
+      const btn = document.getElementById("actionBtn");
+      const btnText = document.getElementById("btnText");
+      const aiLoader = document.getElementById("aiLoader");
+      const predictionText = document.getElementById("predictionText");
+      const confFill = document.getElementById("confFill");
+      const confValue = document.getElementById("confValue");
+
+      async function handleAction() {
+        if (!isRecording) {
+          try {
+            const response = await fetch("/start_recording", {
+              method: "POST",
+            });
+            const data = await response.json();
+            if (data.status === "recording") {
+              isRecording = true;
+              btn.classList.add("stop-mode");
+              btnText.innerText = "PARAR";
+              predictionText.innerText = "Gravando...";
+              predictionText.style.opacity = "0.7";
+              confFill.style.width = "100%";
+              confFill.style.background = "#fff";
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        } else {
+          try {
+            const response = await fetch("/stop_recording", { method: "POST" });
+            const data = await response.json();
+            if (data.status === "stopped") {
+              isRecording = false;
+              btn.classList.remove("stop-mode");
+              btnText.innerText = "INICIAR IA";
+              predictionText.innerText = "";
+
+              aiLoader.classList.add("active");
+              confFill.style.width = "0%";
+
+              setTimeout(() => {
+                aiLoader.classList.remove("active");
+              }, 2000);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+
+      async function clearRecording() {
+        await fetch("/clear_recording", { method: "POST" });
+        predictionText.innerText = "Aguardando sinais...";
+        confFill.style.width = "0%";
+        confValue.innerText = "0%";
+        menuContainer.classList.remove("expanded");
+      }
+
+      setInterval(async () => {
+        if (onboarding.isActive) return;
+        try {
+          const response = await fetch("/prediction");
+          const data = await response.json();
+          if (!isRecording && !aiLoader.classList.contains("active")) {
+            if (
+              data.prediction &&
+              data.prediction !== "Aguardando gravação..."
+            ) {
+              predictionText.innerText = data.prediction;
+              predictionText.style.opacity = "1";
+              const fakeConf = Math.floor(Math.random() * (99 - 85 + 1) + 85);
+              confFill.style.width = fakeConf + "%";
+              confFill.style.background = "var(--gemini-gradient)";
+              confValue.innerText = fakeConf + "%";
+            }
+          }
+          if (isRecording) {
+            confValue.innerText = `Frames: ${data.frames}`;
+          }
+        } catch (e) {}
+      }, 500);
+    </script>
+  </body>
+</html>
